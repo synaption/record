@@ -16,7 +16,7 @@ import subprocess
 import shutil
 import traceback
 import glob
-import os
+
 
 def usage():
     print('usage: recordtest.py [-d <device>] <file>', file=sys.stderr)
@@ -28,16 +28,7 @@ def read_data_from_device(inp, f):
     if l:
         f.write(data)
     time.sleep(.001)
-
-
-def soundframe():
-    subprocess.run(["sox", "-c", "2", "-r", "32000", "-e", "signed-integer", "-b", "32", "test1.raw", "test.wav"])  # convert raw to wav
-    subprocess.run(["sox", "test.wav", "test_mono.wav", "remix", "1"])  # make the sound file mono
-    subprocess.run(["sox", "frame.wav", "test_mono.wav", "out.wav"])  # concatenate audio
-    shutil.move("out.wav", "frame.wav")  # replace old file with new file
-    
-         
-        
+  
 
 if __name__ == '__main__':
     os.chdir("/dev/shm")
@@ -84,20 +75,9 @@ if __name__ == '__main__':
                     #print(os.path.getsize(args[0]))
                     shutil.move("test.raw", "test1.raw")
                     f = open(args[0], 'wb')
-                    soundframe()
                     detect_time=current_time
             read_data_from_device(inp, f)
-            if os.path.getsize("frame.wav") > 550000 and (current_second == "5" or current_second == "0"):
-                files = os.listdir("/dev/shm/detect/")
-                for file in files:
-                    shutil.move("/dev/shm/detect/" + file, "/dev/shm/past/" + file)
-                read_data_from_device(inp, f)
-                shutil.move("frame.wav", "/dev/shm/detect/" + detect_time + ".wav")
-                shutil.copy("template.wav", "frame.wav")
-                # Remove all files from /dev/shm/past
-                past_files = glob.glob('/dev/shm/past/*')
-                for file in past_files:
-                    os.remove(file)
+            
                 
         except Exception as e:  # Catch the exception and print the traceback
             traceback.print_exc()
